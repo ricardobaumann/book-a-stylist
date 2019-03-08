@@ -12,7 +12,6 @@ import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -43,13 +42,11 @@ public class AppointmentService {
                         integer -> new AtomicInteger())
                         .incrementAndGet());
 
-        int STARTING_HOUR = 9;
         AtomicReference<LocalDateTime> startingTime = new AtomicReference<>(
                 LocalDateTime.of(date,
-                        LocalTime.of(STARTING_HOUR, 0)));
+                        LocalTime.of(9, 0)));
 
-        int MAX_SLOTS_PER_DAY = 16;
-        return IntStream.range(0, MAX_SLOTS_PER_DAY)
+        return IntStream.range(0, 16)
                 .mapToObj(value -> {
                     LocalDateTime dateTime = startingTime.get();
                     startingTime.set(startingTime.get().plusMinutes(SLOT_SIZE));
@@ -68,20 +65,14 @@ public class AppointmentService {
         if (appointmentRepo.existsByCustomerIdAndDateAndSlotNumber(customerId, date, slotNumber)) {
             throw new CustomerAlreadyBookedException();
         }
-        List<Stylist> stylists = appointmentRepo.findAvailableStylistsFor(date, slotNumber);
+        Optional<Stylist> stylistOptional = stylistService.findTopAvailableStylistsFor(date, slotNumber);
 
-        log.info("Available stylists: {}", stylists);
-        if (stylists.isEmpty()) {
+        stylistOptional.ifPresentOrElse(stylist -> {
+            log.info("Assigned {}", stylist);
+            appointmentRepo.save(new Appointment(stylist, date, slotNumber, customerId));
+            stylistService.wasAssignedAt(stylist, LocalDateTime.now());
+        }, () -> {
             throw new SlotUnavailableException();
-        }
-
-        Stylist stylist = stylists.stream()
-                .min(Comparator.comparing(s -> Optional.ofNullable(s.getLastAssignedAt())
-                        .map(localDateTime -> localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
-                        .orElse(0L))).get();
-
-        log.info("Assigned {}", stylist);
-        appointmentRepo.save(new Appointment(stylist, date, slotNumber, customerId));
-        stylistService.wasAssignedAt(stylist, LocalDateTime.now());
+        });
     }
 }

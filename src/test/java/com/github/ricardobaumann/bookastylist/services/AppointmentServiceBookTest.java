@@ -11,7 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.LocalDate;
-import java.util.Collections;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -44,9 +44,8 @@ public class AppointmentServiceBookTest {
         )).thenReturn(false);
 
         Stylist stylist = new Stylist(1L, "name", "mail");
-        when(appointmentRepo.findAvailableStylistsFor(date, slotNumber))
-                .thenReturn(Collections.singletonList(
-                        stylist));
+        when(stylistService.findTopAvailableStylistsFor(date, slotNumber))
+                .thenReturn(Optional.of(stylist));
 
         doNothing().when(stylistService).wasAssignedAt(any(), any());
 
@@ -88,8 +87,8 @@ public class AppointmentServiceBookTest {
                 slotNumber
         )).thenReturn(false);
 
-        when(appointmentRepo.findAvailableStylistsFor(date, slotNumber))
-                .thenReturn(Collections.emptyList());
+        when(stylistService.findTopAvailableStylistsFor(date, slotNumber))
+                .thenReturn(Optional.empty());
 
         //When //Then
         assertThatThrownBy(() -> appointmentService.bookCustomerAt(customerId, date, slotNumber))

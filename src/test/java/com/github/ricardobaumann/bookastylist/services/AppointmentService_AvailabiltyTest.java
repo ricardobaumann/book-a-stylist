@@ -3,7 +3,6 @@ package com.github.ricardobaumann.bookastylist.services;
 import com.github.ricardobaumann.bookastylist.models.Appointment;
 import com.github.ricardobaumann.bookastylist.models.Stylist;
 import com.github.ricardobaumann.bookastylist.repos.AppointmentRepo;
-import com.github.ricardobaumann.bookastylist.repos.StylistRepo;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -25,7 +24,7 @@ public class AppointmentService_AvailabiltyTest {
     private AppointmentRepo appointmentRepo;
 
     @Mock
-    private StylistRepo stylistRepo;
+    private StylistService stylistService;
 
     @InjectMocks
     private AppointmentService appointmentService;
@@ -33,7 +32,7 @@ public class AppointmentService_AvailabiltyTest {
     @Test
     public void shouldReturnAvailableSlots() {
         //Given
-        when(stylistRepo.count()).thenReturn(2L);
+        when(stylistService.count()).thenReturn(2L);
         LocalDate date = LocalDate.now();
         Stylist stylist1 = new Stylist(1L, "first", "email1");
         Stylist stylist2 = new Stylist(2L, "second", "email1");

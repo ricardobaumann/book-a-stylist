@@ -4,9 +4,12 @@ import com.github.ricardobaumann.bookastylist.exceptions.DuplicatedStylistExcept
 import com.github.ricardobaumann.bookastylist.models.Stylist;
 import com.github.ricardobaumann.bookastylist.repos.StylistRepo;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 public class StylistService {
@@ -19,6 +22,7 @@ public class StylistService {
 
     public void save(Stylist stylist) {
         try {
+            stylist.setLastAssignedAt(LocalDateTime.now());
             stylistRepo.save(stylist);
         } catch (DataIntegrityViolationException e) {
             throw new DuplicatedStylistException();
@@ -32,5 +36,9 @@ public class StylistService {
     void wasAssignedAt(Stylist stylist, LocalDateTime dateTime) {
         stylist.setLastAssignedAt(dateTime);
         stylistRepo.save(stylist);
+    }
+
+    Optional<Stylist> findTopAvailableStylistsFor(LocalDate date, Integer slotNumber) {
+        return stylistRepo.findTopByAvailableStylistFor(date, slotNumber, PageRequest.of(0, 1));
     }
 }
