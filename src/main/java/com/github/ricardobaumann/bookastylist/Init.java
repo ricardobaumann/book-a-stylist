@@ -29,8 +29,8 @@ public class Init {
             Stylist stylist2 = new Stylist(2L, "second", "email2");
             stylistRepo.saveAll(Arrays.asList(stylist1, stylist2));
 
-            appointmentRepo.save(new Appointment(null, stylist1, LocalDate.now(), 0));
-            appointmentRepo.save(new Appointment(null, stylist2, LocalDate.now(), 0));
+            appointmentRepo.save(new Appointment(stylist1, LocalDate.now(), 0, 1L));
+            appointmentRepo.save(new Appointment(stylist2, LocalDate.now(), 0, 2L));
         };
     }
 

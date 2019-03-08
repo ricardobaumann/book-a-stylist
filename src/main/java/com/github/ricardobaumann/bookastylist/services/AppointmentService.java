@@ -1,7 +1,12 @@
 package com.github.ricardobaumann.bookastylist.services;
 
+import com.github.ricardobaumann.bookastylist.exceptions.CustomerAlreadyBookedException;
+import com.github.ricardobaumann.bookastylist.exceptions.SlotUnavailableException;
+import com.github.ricardobaumann.bookastylist.models.Appointment;
+import com.github.ricardobaumann.bookastylist.models.Stylist;
 import com.github.ricardobaumann.bookastylist.repos.AppointmentRepo;
 import com.github.ricardobaumann.bookastylist.repos.StylistRepo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -16,6 +21,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+@Slf4j
 @Service
 public class AppointmentService {
 
@@ -57,6 +63,20 @@ public class AppointmentService {
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+    }
 
+    public void bookCustomerAt(Long customerId, LocalDate date, Integer slotNumber) {
+        if (appointmentRepo.existsByCustomerIdAndDateAndSlotNumber(customerId, date, slotNumber)) {
+            throw new CustomerAlreadyBookedException();
+        }
+        List<Stylist> stylists = appointmentRepo.findAvailableStylistsFor(date, slotNumber);
+
+        log.info("Available stylists: {}", stylists);
+        if (stylists.isEmpty()) {
+            throw new SlotUnavailableException();
+        }
+
+        Stylist stylist = stylists.get(0);
+        appointmentRepo.save(new Appointment(stylist, date, slotNumber, customerId));
     }
 }

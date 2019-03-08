@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class AppointmentServiceTest {
+public class AppointmentService_AvailabiltyTest {
 
     @Mock
     private AppointmentRepo appointmentRepo;
@@ -39,12 +39,12 @@ public class AppointmentServiceTest {
         Stylist stylist2 = new Stylist(2L, "second", "email1");
         when(appointmentRepo.findByDate(date))
                 .thenReturn(Arrays.asList(
-                        new Appointment(1L, stylist1, date, 0),
-                        new Appointment(2L, stylist2, date, 0),
-                        new Appointment(3L, stylist1, date, 1),
-                        new Appointment(4L, stylist2, date, 2),
-                        new Appointment(5L, stylist1, date, 3),
-                        new Appointment(6L, stylist2, date, 3)
+                        new Appointment(stylist1, date, 0, 1L),
+                        new Appointment(stylist2, date, 0, 1L),
+                        new Appointment(stylist1, date, 1, 1L),
+                        new Appointment(stylist2, date, 2, 1L),
+                        new Appointment(stylist1, date, 3, 1L),
+                        new Appointment(stylist2, date, 3, 1L)
                 ));
 
         //When
