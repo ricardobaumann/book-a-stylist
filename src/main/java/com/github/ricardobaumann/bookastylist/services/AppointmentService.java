@@ -5,17 +5,15 @@ import com.github.ricardobaumann.bookastylist.exceptions.SlotUnavailableExceptio
 import com.github.ricardobaumann.bookastylist.models.Appointment;
 import com.github.ricardobaumann.bookastylist.models.Stylist;
 import com.github.ricardobaumann.bookastylist.repos.AppointmentRepo;
-import com.github.ricardobaumann.bookastylist.repos.StylistRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.time.ZoneId;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -27,30 +25,30 @@ public class AppointmentService {
 
     private static final long SLOT_SIZE = 30;
     private static final AtomicInteger ZERO = new AtomicInteger(0);
-    private final int MAX_SLOTS_PER_DAY = 16;
-    private final int STARTING_HOUR = 9;
 
     private final AppointmentRepo appointmentRepo;
-    private final StylistRepo stylistRepo;
+    private final StylistService stylistService;
 
     public AppointmentService(AppointmentRepo appointmentRepo,
-                              StylistRepo stylistRepo) {
+                              StylistService stylistService) {
         this.appointmentRepo = appointmentRepo;
-        this.stylistRepo = stylistRepo;
+        this.stylistService = stylistService;
     }
 
     public List<LocalDateTime> getAvailableSlots(LocalDate date) {
         Map<Integer, AtomicInteger> slotsBySlotNumber = new HashMap<>();
-        long stylistsAmount = stylistRepo.count();
+        long stylistsAmount = stylistService.count();
         appointmentRepo.findByDate(date)
                 .forEach(appointment -> slotsBySlotNumber.computeIfAbsent(appointment.getSlotNumber(),
                         integer -> new AtomicInteger())
                         .incrementAndGet());
 
+        int STARTING_HOUR = 9;
         AtomicReference<LocalDateTime> startingTime = new AtomicReference<>(
                 LocalDateTime.of(date,
                         LocalTime.of(STARTING_HOUR, 0)));
 
+        int MAX_SLOTS_PER_DAY = 16;
         return IntStream.range(0, MAX_SLOTS_PER_DAY)
                 .mapToObj(value -> {
                     LocalDateTime dateTime = startingTime.get();
@@ -65,6 +63,7 @@ public class AppointmentService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public void bookCustomerAt(Long customerId, LocalDate date, Integer slotNumber) {
         if (appointmentRepo.existsByCustomerIdAndDateAndSlotNumber(customerId, date, slotNumber)) {
             throw new CustomerAlreadyBookedException();
@@ -76,7 +75,13 @@ public class AppointmentService {
             throw new SlotUnavailableException();
         }
 
-        Stylist stylist = stylists.get(0);
+        Stylist stylist = stylists.stream()
+                .min(Comparator.comparing(s -> Optional.ofNullable(s.getLastAssignedAt())
+                        .map(localDateTime -> localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
+                        .orElse(0L))).get();
+
+        log.info("Assigned {}", stylist);
         appointmentRepo.save(new Appointment(stylist, date, slotNumber, customerId));
+        stylistService.wasAssignedAt(stylist, LocalDateTime.now());
     }
 }

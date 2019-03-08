@@ -14,6 +14,8 @@ import java.time.LocalDate;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -21,6 +23,9 @@ public class AppointmentServiceBookTest {
 
     @Mock
     private AppointmentRepo appointmentRepo;
+
+    @Mock
+    private StylistService stylistService;
 
     @InjectMocks
     private AppointmentService appointmentService;
@@ -38,9 +43,12 @@ public class AppointmentServiceBookTest {
                 slotNumber
         )).thenReturn(false);
 
+        Stylist stylist = new Stylist(1L, "name", "mail");
         when(appointmentRepo.findAvailableStylistsFor(date, slotNumber))
                 .thenReturn(Collections.singletonList(
-                        new Stylist(1L, "name", "mail")));
+                        stylist));
+
+        doNothing().when(stylistService).wasAssignedAt(any(), any());
 
         //When //Then
         appointmentService.bookCustomerAt(customerId, date, slotNumber);

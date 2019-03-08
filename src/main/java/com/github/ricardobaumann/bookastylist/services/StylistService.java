@@ -6,6 +6,8 @@ import com.github.ricardobaumann.bookastylist.repos.StylistRepo;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 public class StylistService {
 
@@ -21,5 +23,14 @@ public class StylistService {
         } catch (DataIntegrityViolationException e) {
             throw new DuplicatedStylistException();
         }
+    }
+
+    long count() {
+        return stylistRepo.count();
+    }
+
+    void wasAssignedAt(Stylist stylist, LocalDateTime dateTime) {
+        stylist.setLastAssignedAt(dateTime);
+        stylistRepo.save(stylist);
     }
 }
