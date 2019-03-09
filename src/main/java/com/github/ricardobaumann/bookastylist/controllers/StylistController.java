@@ -1,5 +1,6 @@
 package com.github.ricardobaumann.bookastylist.controllers;
 
+import com.github.ricardobaumann.bookastylist.dtos.StylistDto;
 import com.github.ricardobaumann.bookastylist.models.Stylist;
 import com.github.ricardobaumann.bookastylist.services.StylistService;
 import org.springframework.validation.annotation.Validated;
@@ -21,8 +22,7 @@ public class StylistController {
     }
 
     @PutMapping("/stylists/{id}")
-    public void put(@PathVariable Long id, @RequestBody @Valid Stylist stylist) {
-        stylist.setId(id);
-        stylistService.save(stylist);
+    public void put(@PathVariable Long id, @RequestBody @Valid StylistDto stylistDto) {
+        stylistService.save(new Stylist(id, stylistDto.getName(), stylistDto.getEmail()));
     }
 }

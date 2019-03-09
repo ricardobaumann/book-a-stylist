@@ -74,4 +74,15 @@ public class AppointmentService_AvailabiltyTest {
                 .extracting(AvailableSlot::getSlotNumber)
                 .containsExactly(1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
     }
+
+    @Test
+    public void shouldReturnEmptyOnAbsentStylists() {
+        //Given
+        when(stylistService.count()).thenReturn(0L);
+        LocalDate date = LocalDate.of(2019, 3, 8);
+
+        //When //Then
+        assertThat(appointmentService.getAvailableSlots(date))
+                .isEmpty();
+    }
 }

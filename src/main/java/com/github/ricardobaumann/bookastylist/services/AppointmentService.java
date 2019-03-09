@@ -39,6 +39,10 @@ public class AppointmentService {
         //could also include customerId to filter out customer booked slots
         Map<Integer, AtomicInteger> slotsBySlotNumber = new HashMap<>();
         long stylistsAmount = stylistService.count();
+        if (stylistsAmount == 0) {
+            log.warn("There are no available stylists");
+            return Collections.emptyList();
+        }
         appointmentRepo.findByDate(date)
                 .forEach(appointment -> slotsBySlotNumber.computeIfAbsent(appointment.getSlotNumber(),
                         integer -> new AtomicInteger())
@@ -70,7 +74,7 @@ public class AppointmentService {
         Optional<Stylist> stylistOptional = stylistService.findTopAvailableStylistsFor(date, slotNumber);
 
         stylistOptional.ifPresentOrElse(stylist -> {
-            log.info("Assigned {}", stylist);
+            log.info("Assigned {} at {} slot {}", stylist, date, slotNumber);
             appointmentRepo.save(new Appointment(stylist, date, slotNumber, customerId));
             stylistService.wasAssignedAt(stylist, LocalDateTime.now());
         }, () -> {
