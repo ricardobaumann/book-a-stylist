@@ -1,5 +1,6 @@
 package com.github.ricardobaumann.bookastylist.services;
 
+import com.github.ricardobaumann.bookastylist.dtos.AvailableSlot;
 import com.github.ricardobaumann.bookastylist.exceptions.CustomerAlreadyBookedException;
 import com.github.ricardobaumann.bookastylist.exceptions.SlotUnavailableException;
 import com.github.ricardobaumann.bookastylist.models.Appointment;
@@ -34,7 +35,8 @@ public class AppointmentService {
         this.stylistService = stylistService;
     }
 
-    public List<LocalDateTime> getAvailableSlots(LocalDate date) {
+    public List<AvailableSlot> getAvailableSlots(LocalDate date) {
+        //could also include customerId to filter out customer booked slots
         Map<Integer, AtomicInteger> slotsBySlotNumber = new HashMap<>();
         long stylistsAmount = stylistService.count();
         appointmentRepo.findByDate(date)
@@ -53,11 +55,11 @@ public class AppointmentService {
                     if (slotsBySlotNumber.getOrDefault(value, ZERO).get() >= stylistsAmount) {
                         return null;
                     } else {
-                        return dateTime;
+                        return new AvailableSlot(value, dateTime);
                     }
                 })
                 .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(LinkedList::new));
     }
 
     @Transactional

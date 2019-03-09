@@ -1,4 +1,4 @@
-package com.github.ricardobaumann.bookastylist;
+package com.github.ricardobaumann.bookastylist.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
