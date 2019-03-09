@@ -12,9 +12,15 @@ import java.time.LocalDate;
 @Data
 @Entity
 @NoArgsConstructor
-@Table(uniqueConstraints = @UniqueConstraint(
-        name = "uk_app_stylist_date_slot",
-        columnNames = {"stylist_id", "date", "slotNumber"}))
+@Table(uniqueConstraints = {
+        @UniqueConstraint(
+                name = "uk_app_stylist_date_slot",
+                columnNames = {"stylist_id", "date", "slotNumber"}),
+        @UniqueConstraint(
+                name = "uk_app_cust_date_slot",
+                columnNames = {"customerId", "date", "slotNumber"}
+        )
+})
 public class Appointment {
 
     @Id
