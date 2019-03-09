@@ -1,6 +1,7 @@
 package com.github.ricardobaumann.bookastylist.services;
 
 import com.github.ricardobaumann.bookastylist.exceptions.CustomerAlreadyBookedException;
+import com.github.ricardobaumann.bookastylist.exceptions.PastDateAppointmentException;
 import com.github.ricardobaumann.bookastylist.exceptions.SlotUnavailableException;
 import com.github.ricardobaumann.bookastylist.models.Stylist;
 import com.github.ricardobaumann.bookastylist.repos.AppointmentRepo;
@@ -34,7 +35,7 @@ public class AppointmentServiceBookTest {
     public void shouldBookCustomer() {
         //Given
         Long customerId = 1L;
-        LocalDate date = LocalDate.now();
+        LocalDate date = LocalDate.now().plusDays(1);
         Integer slotNumber = 1;
 
         when(appointmentRepo.existsByCustomerIdAndDateAndSlotNumber(
@@ -57,7 +58,7 @@ public class AppointmentServiceBookTest {
     public void shouldThrowExceptionOnCustomerAlreadyBooked() {
         //Given
         Long customerId = 1L;
-        LocalDate date = LocalDate.now();
+        LocalDate date = LocalDate.now().plusDays(1);
         Integer slotNumber = 1;
 
         when(appointmentRepo.existsByCustomerIdAndDateAndSlotNumber(
@@ -78,7 +79,7 @@ public class AppointmentServiceBookTest {
     public void shouldThrowExceptionOnNonAvailableStylist() {
         //Given
         Long customerId = 1L;
-        LocalDate date = LocalDate.now();
+        LocalDate date = LocalDate.now().plusDays(1);
         Integer slotNumber = 1;
 
         when(appointmentRepo.existsByCustomerIdAndDateAndSlotNumber(
@@ -93,5 +94,17 @@ public class AppointmentServiceBookTest {
         //When //Then
         assertThatThrownBy(() -> appointmentService.bookCustomerAt(customerId, date, slotNumber))
                 .isInstanceOf(SlotUnavailableException.class);
+    }
+
+    @Test
+    public void shouldThrowExceptionOnPastBookingDate() {
+        //Given
+        Long customerId = 1L;
+        LocalDate date = LocalDate.now().minusDays(1);
+        Integer slotNumber = 1;
+
+        //When //Then
+        assertThatThrownBy(() -> appointmentService.bookCustomerAt(customerId, date, slotNumber))
+                .isInstanceOf(PastDateAppointmentException.class);
     }
 }

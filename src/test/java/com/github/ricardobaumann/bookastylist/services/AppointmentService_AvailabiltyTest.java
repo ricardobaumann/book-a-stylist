@@ -11,7 +11,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -34,7 +33,7 @@ public class AppointmentService_AvailabiltyTest {
     public void shouldReturnAvailableSlots() {
         //Given
         when(stylistService.count()).thenReturn(2L);
-        LocalDate date = LocalDate.of(2019, 3, 8);
+        LocalDate date = LocalDate.now().plusDays(1);
         Stylist stylist1 = new Stylist(1L, "first", "email1");
         Stylist stylist2 = new Stylist(2L, "second", "email1");
         when(appointmentRepo.findByDate(date))
@@ -52,23 +51,7 @@ public class AppointmentService_AvailabiltyTest {
 
         //Then
         assertThat(results)
-                .extracting(AvailableSlot::getDateTime)
-                .extracting(LocalDateTime::toString)
-                .containsExactly(
-                        "2019-03-08T09:30",
-                        "2019-03-08T10:00",
-                        "2019-03-08T11:00",
-                        "2019-03-08T11:30",
-                        "2019-03-08T12:00",
-                        "2019-03-08T12:30",
-                        "2019-03-08T13:00",
-                        "2019-03-08T13:30",
-                        "2019-03-08T14:00",
-                        "2019-03-08T14:30",
-                        "2019-03-08T15:00",
-                        "2019-03-08T15:30",
-                        "2019-03-08T16:00",
-                        "2019-03-08T16:30");
+                .hasSize(14);
 
         assertThat(results)
                 .extracting(AvailableSlot::getSlotNumber)
@@ -79,10 +62,16 @@ public class AppointmentService_AvailabiltyTest {
     public void shouldReturnEmptyOnAbsentStylists() {
         //Given
         when(stylistService.count()).thenReturn(0L);
-        LocalDate date = LocalDate.of(2019, 3, 8);
+        LocalDate date = LocalDate.now().plusDays(1);
 
         //When //Then
         assertThat(appointmentService.getAvailableSlots(date))
+                .isEmpty();
+    }
+
+    @Test
+    public void shouldReturnEmptyOnPastDate() {
+        assertThat(appointmentService.getAvailableSlots(LocalDate.now().minusDays(1)))
                 .isEmpty();
     }
 }

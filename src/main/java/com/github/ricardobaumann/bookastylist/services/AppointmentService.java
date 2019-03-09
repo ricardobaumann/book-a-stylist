@@ -2,6 +2,7 @@ package com.github.ricardobaumann.bookastylist.services;
 
 import com.github.ricardobaumann.bookastylist.dtos.AvailableSlot;
 import com.github.ricardobaumann.bookastylist.exceptions.CustomerAlreadyBookedException;
+import com.github.ricardobaumann.bookastylist.exceptions.PastDateAppointmentException;
 import com.github.ricardobaumann.bookastylist.exceptions.SlotUnavailableException;
 import com.github.ricardobaumann.bookastylist.models.Appointment;
 import com.github.ricardobaumann.bookastylist.models.Stylist;
@@ -37,6 +38,9 @@ public class AppointmentService {
 
     public List<AvailableSlot> getAvailableSlots(LocalDate date) {
         //could also include customerId to filter out customer booked slots
+        if (date.isBefore(LocalDate.now())) {
+            return Collections.emptyList();
+        }
         Map<Integer, AtomicInteger> slotsBySlotNumber = new HashMap<>();
         long stylistsAmount = stylistService.count();
         if (stylistsAmount == 0) {
@@ -56,6 +60,9 @@ public class AppointmentService {
                 .mapToObj(value -> {
                     LocalDateTime dateTime = startingTime.get();
                     startingTime.set(startingTime.get().plusMinutes(SLOT_SIZE));
+                    if (dateTime.isBefore(LocalDateTime.now())) {
+                        return null;
+                    }
                     if (slotsBySlotNumber.getOrDefault(value, ZERO).get() >= stylistsAmount) {
                         return null;
                     } else {
@@ -68,6 +75,11 @@ public class AppointmentService {
 
     @Transactional
     public void bookCustomerAt(Long customerId, LocalDate date, Integer slotNumber) {
+        LocalDateTime slotDateTime = LocalDateTime.of(date, LocalTime.of(9, 0))
+                .plusMinutes(slotNumber * 30);
+        if (slotDateTime.isBefore(LocalDateTime.now())) {
+            throw new PastDateAppointmentException();
+        }
         if (appointmentRepo.existsByCustomerIdAndDateAndSlotNumber(customerId, date, slotNumber)) {
             throw new CustomerAlreadyBookedException();
         }
