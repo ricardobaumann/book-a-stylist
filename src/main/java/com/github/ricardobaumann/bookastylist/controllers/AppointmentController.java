@@ -1,7 +1,7 @@
 package com.github.ricardobaumann.bookastylist.controllers;
 
 import com.github.ricardobaumann.bookastylist.dtos.AppointmentDto;
-import com.github.ricardobaumann.bookastylist.dtos.AppointmentResult;
+import com.github.ricardobaumann.bookastylist.dtos.AppointmentResultDto;
 import com.github.ricardobaumann.bookastylist.dtos.AvailableSlot;
 import com.github.ricardobaumann.bookastylist.dtos.StylistDto;
 import com.github.ricardobaumann.bookastylist.models.Appointment;
@@ -30,13 +30,13 @@ public class AppointmentController {
     }
 
     @PostMapping("/appointments")
-    public AppointmentResult post(@RequestBody @Valid AppointmentDto appointmentDto) {
+    public AppointmentResultDto post(@RequestBody @Valid AppointmentDto appointmentDto) {
         Appointment appointment = appointmentService.bookCustomerAt(
                 appointmentDto.getCustomerId(),
                 appointmentDto.getDate(),
                 appointmentDto.getSlotNumber()
         );
-        return new AppointmentResult(
+        return new AppointmentResultDto(
                 new StylistDto(
                         appointment.getStylist().getName(),
                         appointment.getStylist().getEmail()

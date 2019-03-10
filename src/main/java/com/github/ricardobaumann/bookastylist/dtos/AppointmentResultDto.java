@@ -7,7 +7,7 @@ import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
-public class AppointmentResult {
+public class AppointmentResultDto {
     private final StylistDto stylist;
     private final LocalDate date;
     private final Integer slotNumber;
