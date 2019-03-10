@@ -1,8 +1,8 @@
 package com.github.ricardobaumann.bookastylist.services;
 
 import com.github.ricardobaumann.bookastylist.dtos.AvailableSlot;
-import com.github.ricardobaumann.bookastylist.models.Appointment;
 import com.github.ricardobaumann.bookastylist.models.Stylist;
+import com.github.ricardobaumann.bookastylist.projections.SlotCountProjection;
 import com.github.ricardobaumann.bookastylist.repos.AppointmentRepo;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,14 +36,10 @@ public class AppointmentService_AvailabiltyTest {
         LocalDate date = LocalDate.now().plusDays(1);
         Stylist stylist1 = new Stylist(1L, "first", "email1");
         Stylist stylist2 = new Stylist(2L, "second", "email1");
-        when(appointmentRepo.findByDate(date))
+        when(appointmentRepo.getSlotAppointmentCounts(date))
                 .thenReturn(Arrays.asList(
-                        new Appointment(stylist1, date, 0, 1L),
-                        new Appointment(stylist2, date, 0, 1L),
-                        new Appointment(stylist1, date, 1, 1L),
-                        new Appointment(stylist2, date, 2, 1L),
-                        new Appointment(stylist1, date, 3, 1L),
-                        new Appointment(stylist2, date, 3, 1L)
+                        new SlotCountProjection(0, 2L),
+                        new SlotCountProjection(1, 1L)
                 ));
 
         //When
@@ -51,11 +47,11 @@ public class AppointmentService_AvailabiltyTest {
 
         //Then
         assertThat(results)
-                .hasSize(14);
+                .hasSize(15);
 
         assertThat(results)
                 .extracting(AvailableSlot::getSlotNumber)
-                .containsExactly(1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+                .containsExactly(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
     }
 
     @Test

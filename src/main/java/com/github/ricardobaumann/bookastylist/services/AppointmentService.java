@@ -6,6 +6,7 @@ import com.github.ricardobaumann.bookastylist.exceptions.PastDateAppointmentExce
 import com.github.ricardobaumann.bookastylist.exceptions.SlotUnavailableException;
 import com.github.ricardobaumann.bookastylist.models.Appointment;
 import com.github.ricardobaumann.bookastylist.models.Stylist;
+import com.github.ricardobaumann.bookastylist.projections.SlotCountProjection;
 import com.github.ricardobaumann.bookastylist.repos.AppointmentRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,7 +16,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -25,7 +25,6 @@ import java.util.stream.IntStream;
 public class AppointmentService {
 
     private static final long SLOT_SIZE = 30;
-    private static final AtomicInteger ZERO = new AtomicInteger(0);
     private static final int STARTING_HOUR = 9;
 
     private final AppointmentRepo appointmentRepo;
@@ -42,16 +41,16 @@ public class AppointmentService {
         if (date.isBefore(LocalDate.now())) {
             return Collections.emptyList();
         }
-        Map<Integer, AtomicInteger> slotsBySlotNumber = new HashMap<>();
+
         long stylistsAmount = stylistService.count();
         if (stylistsAmount == 0) {
             log.warn("There are no available stylists");
             return Collections.emptyList();
         }
-        appointmentRepo.findByDate(date)
-                .forEach(appointment -> slotsBySlotNumber.computeIfAbsent(appointment.getSlotNumber(),
-                        integer -> new AtomicInteger())
-                        .incrementAndGet());
+
+        Map<Integer, Long> slotsBySlotNumber = appointmentRepo.getSlotAppointmentCounts(date)
+                .stream()
+                .collect(Collectors.toMap(SlotCountProjection::getSlotNumber, SlotCountProjection::getCount));
 
         AtomicReference<LocalDateTime> startingTime = new AtomicReference<>(
                 LocalDateTime.of(date,
@@ -64,7 +63,7 @@ public class AppointmentService {
                     if (dateTime.isBefore(LocalDateTime.now())) {
                         return null;
                     }
-                    if (slotsBySlotNumber.getOrDefault(value, ZERO).get() >= stylistsAmount) {
+                    if (slotsBySlotNumber.getOrDefault(value, 0L) >= stylistsAmount) {
                         return null;
                     } else {
                         return new AvailableSlot(value, dateTime);

@@ -2,6 +2,7 @@ package com.github.ricardobaumann.bookastylist.repos;
 
 import com.github.ricardobaumann.bookastylist.models.Appointment;
 import com.github.ricardobaumann.bookastylist.models.Stylist;
+import com.github.ricardobaumann.bookastylist.projections.SlotCountProjection;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,5 +60,18 @@ public class QueriesTest {
     public void shouldFindTopAvailableStylistsFor() {
         Optional<Stylist> result = stylistRepo.findTopByAvailableStylistFor(date, 1, PageRequest.of(0, 1));
         assertThat(result.map(Stylist::getId)).contains(2L);
+    }
+
+    @Test
+    public void shouldCountAppointmentsBySlot() {
+        //Given
+        appointmentRepo.save(new Appointment(stylist1, date, 1, 3L));
+
+        //When //Then
+        assertThat(appointmentRepo.getSlotAppointmentCounts(date))
+                .containsExactlyInAnyOrder(
+                        new SlotCountProjection(0, 2L),
+                        new SlotCountProjection(1, 1L)
+                );
     }
 }
