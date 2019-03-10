@@ -1,7 +1,6 @@
 package com.github.ricardobaumann.bookastylist.services;
 
 import com.github.ricardobaumann.bookastylist.dtos.AvailableSlot;
-import com.github.ricardobaumann.bookastylist.models.Stylist;
 import com.github.ricardobaumann.bookastylist.projections.SlotCountProjection;
 import com.github.ricardobaumann.bookastylist.repos.AppointmentRepo;
 import org.junit.Test;
@@ -34,8 +33,6 @@ public class AppointmentService_AvailabiltyTest {
         //Given
         when(stylistService.count()).thenReturn(2L);
         LocalDate date = LocalDate.now().plusDays(1);
-        Stylist stylist1 = new Stylist(1L, "first", "email1");
-        Stylist stylist2 = new Stylist(2L, "second", "email1");
         when(appointmentRepo.getSlotAppointmentCounts(date))
                 .thenReturn(Arrays.asList(
                         new SlotCountProjection(0, 2L),
