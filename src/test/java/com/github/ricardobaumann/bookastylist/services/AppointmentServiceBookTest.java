@@ -3,10 +3,12 @@ package com.github.ricardobaumann.bookastylist.services;
 import com.github.ricardobaumann.bookastylist.exceptions.CustomerAlreadyBookedException;
 import com.github.ricardobaumann.bookastylist.exceptions.PastDateAppointmentException;
 import com.github.ricardobaumann.bookastylist.exceptions.SlotUnavailableException;
+import com.github.ricardobaumann.bookastylist.models.Appointment;
 import com.github.ricardobaumann.bookastylist.models.Stylist;
 import com.github.ricardobaumann.bookastylist.repos.AppointmentRepo;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -14,10 +16,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.time.LocalDate;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AppointmentServiceBookTest {
@@ -48,10 +50,21 @@ public class AppointmentServiceBookTest {
         when(stylistService.findTopAvailableStylistsFor(date, slotNumber))
                 .thenReturn(Optional.of(stylist));
 
+        Appointment appointment = new Appointment(stylist, date, slotNumber, customerId);
+        when(appointmentRepo.save(any())).thenReturn(appointment);
+
         doNothing().when(stylistService).wasAssignedAt(any(), any());
 
         //When //Then
-        appointmentService.bookCustomerAt(customerId, date, slotNumber);
+        assertThat(appointmentService.bookCustomerAt(customerId, date, slotNumber))
+                .isEqualTo(appointment);
+
+        ArgumentCaptor<Appointment> appointmentArgumentCaptor = ArgumentCaptor.forClass(Appointment.class);
+        verify(appointmentRepo).save(appointmentArgumentCaptor.capture());
+        Appointment capturedAppointment = appointmentArgumentCaptor.getValue();
+        assertThat(capturedAppointment.getStylist()).isEqualTo(stylist);
+        assertThat(capturedAppointment.getSlotNumber()).isEqualTo(slotNumber);
+        assertThat(capturedAppointment.getDate()).isEqualTo(date);
     }
 
     @Test

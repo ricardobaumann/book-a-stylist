@@ -29,11 +29,11 @@ public class QueriesTest {
     @Autowired
     private StylistRepo stylistRepo;
 
-    LocalDate date = LocalDate.now();
-    Long customerId = 1L;
-    Long customerId2 = 2L;
-    Stylist stylist1 = new Stylist(1L, "first", "mail1");
-    Stylist stylist2 = new Stylist(2L, "second", "mail2");
+    private LocalDate date = LocalDate.now();
+    private Long customerId = 1L;
+    private Long customerId2 = 2L;
+    private Stylist stylist1 = new Stylist(1L, "first", "mail1@mail.com");
+    private Stylist stylist2 = new Stylist(2L, "second", "mail2@mail.com");
 
     @Before
     public void setUp() {

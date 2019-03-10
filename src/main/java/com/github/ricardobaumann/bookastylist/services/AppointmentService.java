@@ -74,9 +74,10 @@ public class AppointmentService {
     }
 
     @Transactional
-    public void bookCustomerAt(Long customerId, LocalDate date, Integer slotNumber) {
+    public Appointment bookCustomerAt(Long customerId, LocalDate date, Integer slotNumber) {
         LocalDateTime slotDateTime = LocalDateTime.of(date, LocalTime.of(9, 0))
                 .plusMinutes(slotNumber * 30);
+        log.info("Slot date time {}", slotDateTime);
         if (slotDateTime.isBefore(LocalDateTime.now())) {
             throw new PastDateAppointmentException();
         }
@@ -85,12 +86,11 @@ public class AppointmentService {
         }
         Optional<Stylist> stylistOptional = stylistService.findTopAvailableStylistsFor(date, slotNumber);
 
-        stylistOptional.ifPresentOrElse(stylist -> {
-            log.info("Assigned {} at {} slot {}", stylist, date, slotNumber);
-            appointmentRepo.save(new Appointment(stylist, date, slotNumber, customerId));
-            stylistService.wasAssignedAt(stylist, LocalDateTime.now());
-        }, () -> {
-            throw new SlotUnavailableException();
-        });
+        return stylistOptional
+                .map(stylist -> {
+                    log.info("Assigned {} at {} slot {}", stylist, date, slotNumber);
+                    stylistService.wasAssignedAt(stylist, LocalDateTime.now());
+                    return appointmentRepo.save(new Appointment(stylist, date, slotNumber, customerId));
+                }).orElseThrow(SlotUnavailableException::new);
     }
 }

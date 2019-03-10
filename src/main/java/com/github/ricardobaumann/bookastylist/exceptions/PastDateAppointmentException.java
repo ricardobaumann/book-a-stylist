@@ -8,6 +8,6 @@ public class PastDateAppointmentException extends RuntimeException {
 
     @Override
     public String getMessage() {
-        return "Appointments cannot be created in he past";
+        return "Appointments cannot be created in the past";
     }
 }

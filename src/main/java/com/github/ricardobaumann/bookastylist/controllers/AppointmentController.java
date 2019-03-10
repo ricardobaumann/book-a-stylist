@@ -1,7 +1,10 @@
 package com.github.ricardobaumann.bookastylist.controllers;
 
 import com.github.ricardobaumann.bookastylist.dtos.AppointmentDto;
+import com.github.ricardobaumann.bookastylist.dtos.AppointmentResult;
 import com.github.ricardobaumann.bookastylist.dtos.AvailableSlot;
+import com.github.ricardobaumann.bookastylist.dtos.StylistDto;
+import com.github.ricardobaumann.bookastylist.models.Appointment;
 import com.github.ricardobaumann.bookastylist.services.AppointmentService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
@@ -27,11 +30,16 @@ public class AppointmentController {
     }
 
     @PostMapping("/appointments")
-    public void post(@RequestBody @Valid AppointmentDto appointmentDto) {
-        appointmentService.bookCustomerAt(
+    public AppointmentResult post(@RequestBody @Valid AppointmentDto appointmentDto) {
+        Appointment appointment = appointmentService.bookCustomerAt(
                 appointmentDto.getCustomerId(),
                 appointmentDto.getDate(),
                 appointmentDto.getSlotNumber()
         );
+        return new AppointmentResult(
+                new StylistDto(
+                        appointment.getStylist().getName(),
+                        appointment.getStylist().getEmail()
+                ), appointment.getDate(), appointment.getSlotNumber());
     }
 }

@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
@@ -22,6 +23,7 @@ public class Stylist {
 
     @NotNull
     @Column(unique = true)
+    @Email
     private String email;
 
     private LocalDateTime lastAssignedAt;
