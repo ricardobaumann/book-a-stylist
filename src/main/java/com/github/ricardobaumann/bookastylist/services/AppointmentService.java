@@ -84,7 +84,7 @@ public class AppointmentService {
         if (appointmentRepo.existsByCustomerIdAndDateAndSlotNumber(customerId, date, slotNumber)) {
             throw new CustomerAlreadyBookedException();
         }
-        Optional<Stylist> stylistOptional = stylistService.findTopAvailableStylistsFor(date, slotNumber);
+        Optional<Stylist> stylistOptional = stylistService.findAvailableStylist(date, slotNumber);
 
         return stylistOptional
                 .map(stylist -> {

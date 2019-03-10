@@ -38,7 +38,7 @@ public class StylistService {
         stylistRepo.save(stylist);
     }
 
-    Optional<Stylist> findTopAvailableStylistsFor(LocalDate date, Integer slotNumber) {
+    Optional<Stylist> findAvailableStylist(LocalDate date, Integer slotNumber) {
         return stylistRepo.findTopByAvailableStylistFor(date, slotNumber, PageRequest.of(0, 1));
     }
 }

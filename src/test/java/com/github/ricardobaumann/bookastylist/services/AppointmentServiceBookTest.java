@@ -47,7 +47,7 @@ public class AppointmentServiceBookTest {
         )).thenReturn(false);
 
         Stylist stylist = new Stylist(1L, "name", "mail");
-        when(stylistService.findTopAvailableStylistsFor(date, slotNumber))
+        when(stylistService.findAvailableStylist(date, slotNumber))
                 .thenReturn(Optional.of(stylist));
 
         Appointment appointment = new Appointment(stylist, date, slotNumber, customerId);
@@ -101,7 +101,7 @@ public class AppointmentServiceBookTest {
                 slotNumber
         )).thenReturn(false);
 
-        when(stylistService.findTopAvailableStylistsFor(date, slotNumber))
+        when(stylistService.findAvailableStylist(date, slotNumber))
                 .thenReturn(Optional.empty());
 
         //When //Then
