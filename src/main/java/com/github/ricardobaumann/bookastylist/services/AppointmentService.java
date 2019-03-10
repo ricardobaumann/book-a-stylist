@@ -26,6 +26,7 @@ public class AppointmentService {
 
     private static final long SLOT_SIZE = 30;
     private static final AtomicInteger ZERO = new AtomicInteger(0);
+    private static final int STARTING_HOUR = 9;
 
     private final AppointmentRepo appointmentRepo;
     private final StylistService stylistService;
@@ -54,7 +55,7 @@ public class AppointmentService {
 
         AtomicReference<LocalDateTime> startingTime = new AtomicReference<>(
                 LocalDateTime.of(date,
-                        LocalTime.of(9, 0)));
+                        LocalTime.of(STARTING_HOUR, 0)));
 
         return IntStream.range(0, 16)
                 .mapToObj(value -> {
@@ -75,8 +76,8 @@ public class AppointmentService {
 
     @Transactional
     public Appointment bookCustomerAt(Long customerId, LocalDate date, Integer slotNumber) {
-        LocalDateTime slotDateTime = LocalDateTime.of(date, LocalTime.of(9, 0))
-                .plusMinutes(slotNumber * 30);
+        LocalDateTime slotDateTime = LocalDateTime.of(date, LocalTime.of(STARTING_HOUR, 0))
+                .plusMinutes(slotNumber * SLOT_SIZE);
         log.info("Slot date time {}", slotDateTime);
         if (slotDateTime.isBefore(LocalDateTime.now())) {
             throw new PastDateAppointmentException();
