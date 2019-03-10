@@ -31,7 +31,7 @@ POST /appointments
 {
 	"customerId": 3,
 	"date": "2019-03-08",
-	"slotNumber": 20
+	"slotNumber": 0
 }
 Content-Type: application/json
 ````
